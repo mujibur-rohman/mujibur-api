@@ -32,3 +32,9 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Password is required.' })
   password: string;
 }
+
+export class ForgotPasswordDto {
+  @IsNotEmpty({ message: 'Email is required.' })
+  @IsEmail({}, { message: 'Email must be valid.' })
+  email: string;
+}
