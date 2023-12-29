@@ -22,7 +22,6 @@ model User {
   uuid         String 
   name         String 
   email        String   @unique
-  address      String?
   password     String
   avatar       Avatars?
   role         String    

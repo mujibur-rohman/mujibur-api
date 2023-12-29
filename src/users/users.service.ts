@@ -1,5 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ForgotPasswordDto, LoginDto, RegisterDto } from './dto/users.dto';
+import {
+  ChangeNameDto,
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from './dto/users.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
@@ -90,6 +97,79 @@ export class UsersService {
     return forgotPasswordToken;
   }
 
+  // * change name
+  async changeName({
+    id,
+    changeNameDto,
+  }: {
+    id: string;
+    changeNameDto: ChangeNameDto;
+  }) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        uuid: id,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        name: changeNameDto.name,
+      },
+    });
+
+    return { message: `Name has changed!` };
+  }
+
+  // * change password
+  async changePassword({
+    id,
+    changePasswordDto,
+  }: {
+    id: string;
+    changePasswordDto: ChangePasswordDto;
+  }) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        uuid: id,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (
+      !(await this.comparePassword(
+        changePasswordDto.oldPassword,
+        user.password,
+      ))
+    ) {
+      throw new BadRequestException('Wrong password!');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      10,
+    );
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return { message: `Change password successfully!` };
+  }
+
   //* forgot password
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
@@ -116,7 +196,41 @@ export class UsersService {
       activationCode: resetPasswordUrl,
     });
 
-    return { message: `Check your email to forgot password!` };
+    return {
+      message: `Check your email to forgot password!`,
+      activationToken: forgotPasswordToken,
+    };
+  }
+
+  //* reset password
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { password, activationToken } = resetPasswordDto;
+
+    const decoded = await this.jwtService.decode(activationToken);
+
+    if (!decoded || decoded?.exp * 1000 < Date.now()) {
+      throw new BadRequestException('Invalid token!');
+    }
+
+    console.log(decoded);
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.user.update({
+      where: {
+        id: decoded.user.id,
+      },
+      data: {
+        password: hashedPassword,
+      },
+      select: {
+        uuid: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    return { user, message: 'Reset Password successfully' };
   }
 
   async getUsers(): Promise<User[]> {

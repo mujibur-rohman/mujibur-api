@@ -38,3 +38,24 @@ export class ForgotPasswordDto {
   @IsEmail({}, { message: 'Email must be valid.' })
   email: string;
 }
+
+export class ChangePasswordDto {
+  @IsNotEmpty({ message: 'New Password is required.' })
+  newPassword: string;
+
+  @IsNotEmpty({ message: 'Old Password is required.' })
+  oldPassword: string;
+}
+
+export class ResetPasswordDto {
+  @IsNotEmpty({ message: 'Password is required.' })
+  password: string;
+
+  @IsNotEmpty({ message: 'Token is required.' })
+  activationToken: string;
+}
+
+export class ChangeNameDto {
+  @IsNotEmpty({ message: 'Name is required.' })
+  name: string;
+}

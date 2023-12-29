@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ForgotPasswordDto, LoginDto, RegisterDto } from './dto/users.dto';
+import {
+  ChangeNameDto,
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from './dto/users.dto';
 
 @Controller('users')
 export class UsersController {
@@ -21,6 +28,36 @@ export class UsersController {
   @Post('/forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     const result = await this.userService.forgotPassword(forgotPasswordDto);
+    return result;
+  }
+
+  @Post('/reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    const result = await this.userService.resetPassword(resetPasswordDto);
+    return result;
+  }
+
+  @Put('/change-password/:id')
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Param('id') id: string,
+  ) {
+    const result = await this.userService.changePassword({
+      changePasswordDto,
+      id,
+    });
+    return result;
+  }
+
+  @Put('/change-name/:id')
+  async changeName(
+    @Body() changeNameDto: ChangeNameDto,
+    @Param('id') id: string,
+  ) {
+    const result = await this.userService.changeName({
+      changeNameDto,
+      id,
+    });
     return result;
   }
 
