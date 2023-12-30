@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,44 +10,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import {
-  ChangeNameDto,
-  ChangePasswordDto,
-  ForgotPasswordDto,
-  LoginDto,
-  RegisterDto,
-  ResetPasswordDto,
-} from './dto/users.dto';
+import { AvatarDto, ChangeNameDto, ChangePasswordDto } from './dto/users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { saveImageToStorage } from 'src/utils/storage-files';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-
-  @Post('/register')
-  async register(@Body() registerDto: RegisterDto) {
-    const user = await this.userService.register(registerDto);
-    return user;
-  }
-
-  @Post('/auth')
-  async login(@Body() loginDto: LoginDto) {
-    const result = await this.userService.login(loginDto);
-    return result;
-  }
-
-  @Post('/forgot-password')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    const result = await this.userService.forgotPassword(forgotPasswordDto);
-    return result;
-  }
-
-  @Post('/reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    const result = await this.userService.resetPassword(resetPasswordDto);
-    return result;
-  }
 
   @Put('/change-password/:id')
   async changePassword(
@@ -74,11 +44,15 @@ export class UsersController {
 
   @Post('/avatar')
   @UseInterceptors(FileInterceptor('avatar', saveImageToStorage))
-  uploadAvatar(
+  async uploadAvatar(
     @UploadedFile()
     avatar: Express.Multer.File,
+    @Body() avatarDto: AvatarDto,
   ) {
-    console.log(avatar);
+    if (!avatar) {
+      throw new BadRequestException('avatar is required');
+    }
+    await this.userService.uploadAvatar(avatar, avatarDto);
   }
 
   @Get()

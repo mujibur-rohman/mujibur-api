@@ -59,3 +59,7 @@ export class ChangeNameDto {
   @IsNotEmpty({ message: 'Name is required.' })
   name: string;
 }
+export class AvatarDto {
+  @IsNotEmpty({ message: 'User Id is required' })
+  userId: string;
+}
