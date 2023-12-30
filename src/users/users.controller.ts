@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   ChangeNameDto,
@@ -8,6 +17,8 @@ import {
   RegisterDto,
   ResetPasswordDto,
 } from './dto/users.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { saveImageToStorage } from 'src/utils/storage-files';
 
 @Controller('users')
 export class UsersController {
@@ -59,6 +70,15 @@ export class UsersController {
       id,
     });
     return result;
+  }
+
+  @Post('/avatar')
+  @UseInterceptors(FileInterceptor('avatar', saveImageToStorage))
+  uploadAvatar(
+    @UploadedFile()
+    avatar: Express.Multer.File,
+  ) {
+    console.log(avatar);
   }
 
   @Get()
