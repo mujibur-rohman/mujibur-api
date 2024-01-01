@@ -5,6 +5,13 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "watchAssets": true,
-    "assets": ["email-templates/**/*"]
+    "assets": [
+      "email-templates/**/*",
+      {
+        "include": "../public/img/avatar/**/*",
+        "outDir": "dist/public",
+        "watchAssets": true
+      }
+    ]
   }
 }

@@ -17,3 +17,5 @@ export const validMimeType: ValidMimeType[] = [
   'image/jpg',
   'image/png',
 ];
+
+export const AVATAR_PATH = '/img/avatar';

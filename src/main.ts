@@ -9,8 +9,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
-  app.useStaticAssets(join(__dirname, '..', 'public'));
+
   app.setBaseViewsDir(join(__dirname, '..', 'email-templates'));
+  app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setViewEngine('ejs');
   await app.listen(5000);
 }
