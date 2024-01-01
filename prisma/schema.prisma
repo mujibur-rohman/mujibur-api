@@ -20,12 +20,13 @@ model Avatars {
 
 model User {
   id           Int      @id @default(autoincrement()) @map("_id")
-  uuid         String 
+  uuid         String   @unique
   name         String 
   email        String   @unique
-  password     String
+  password     String   @db.LongText()
   avatar       Avatars?
   role         String    
+  token        String?    @db.LongText()
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

@@ -1,11 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ForgotPasswordDto,
   LoginDto,
+  LogoutDto,
   RegisterDto,
   ResetPasswordDto,
-} from 'src/users/dto/users.dto';
+} from './dto/auth.dto';
+import { Request } from 'express';
+import { AccessTokenGuard } from 'src/guards/access-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -15,6 +18,16 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
     return result;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/logout')
+  async logout(@Body() logoutDto: LogoutDto, @Req() req: Request) {
+    console.log(req.user);
+    await this.authService.logout(logoutDto.userId);
+    return {
+      message: 'Logout Successfully',
+    };
   }
 
   @Post('/register')

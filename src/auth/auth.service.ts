@@ -2,18 +2,18 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
+import { comparePassword } from 'src/utils/compare-password';
+import { JWTToken } from 'src/utils/handle-token';
+import { User } from '@prisma/client';
+import { EmailService } from 'src/email/email.service';
 import {
   ForgotPasswordDto,
   LoginDto,
   RegisterDto,
   ResetPasswordDto,
-} from 'src/users/dto/users.dto';
-import * as bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
-import { comparePassword } from 'src/utils/compare-password';
-import { TokenSender } from 'src/utils/handle-token';
-import { User } from '@prisma/client';
-import { EmailService } from 'src/email/email.service';
+} from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -59,8 +59,12 @@ export class AuthService {
       },
     });
     if (user && (await comparePassword(password, user.password))) {
-      const tokenSender = new TokenSender(this.configService, this.jwtService);
-      return tokenSender.sendToken(user);
+      const token = new JWTToken(this.configService, this.jwtService);
+      await this.updateRefreshToken(
+        user.uuid,
+        (await token.getToken(user)).refreshToken,
+      );
+      return await token.getToken(user);
     } else {
       return {
         user: null,
@@ -71,6 +75,31 @@ export class AuthService {
         },
       };
     }
+  }
+
+  // * Logout
+  async logout(userId: string) {
+    return await this.prisma.user.update({
+      where: {
+        uuid: userId,
+      },
+      data: {
+        token: null,
+      },
+    });
+  }
+
+  // * Update token from db
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: {
+        uuid: userId,
+      },
+      data: {
+        token: hashedRefreshToken,
+      },
+    });
   }
 
   //* forgot password
@@ -128,8 +157,6 @@ export class AuthService {
     if (!decoded || decoded?.exp * 1000 < Date.now()) {
       throw new BadRequestException('Invalid token!');
     }
-
-    console.log(decoded);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

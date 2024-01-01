@@ -6,13 +6,17 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AvatarDto, ChangeNameDto, ChangePasswordDto } from './dto/users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { saveImageToStorage } from 'src/utils/storage-files';
+import { Request } from 'express';
+import { AccessTokenGuard } from 'src/guards/access-token.guard';
 
 @Controller('users')
 export class UsersController {
@@ -55,8 +59,10 @@ export class UsersController {
     await this.userService.uploadAvatar(avatar, avatarDto);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get()
-  async getUsers() {
+  async getUsers(@Req() req: Request) {
+    console.log(req.user);
     return this.userService.getUsers();
   }
 }
