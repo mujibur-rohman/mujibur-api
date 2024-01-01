@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -13,12 +14,21 @@ import {
 import { UsersService } from './users.service';
 import { AvatarDto, ChangeNameDto, ChangePasswordDto } from './dto/users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { saveImageToStorage } from 'src/utils/storage-files';
+import { saveAvatarToStorage } from 'src/utils/storage-files';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
+import { AdminGuard } from 'src/guards/admin.guard';
+import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
+
+  @UseGuards(AccessTokenGuard)
+  @Get()
+  @UseGuards(AdminGuard)
+  async getUsers() {
+    return this.userService.getUsers();
+  }
 
   @Put('/change-password/:id')
   async changePassword(
@@ -45,21 +55,18 @@ export class UsersController {
   }
 
   @Post('/avatar')
-  @UseInterceptors(FileInterceptor('avatar', saveImageToStorage))
+  @UseInterceptors(FileInterceptor('avatar', saveAvatarToStorage))
   async uploadAvatar(
     @UploadedFile()
     avatar: Express.Multer.File,
     @Body() avatarDto: AvatarDto,
+    @Req() request: Request,
   ) {
     if (!avatar) {
       throw new BadRequestException('avatar is required');
     }
-    await this.userService.uploadAvatar(avatar, avatarDto);
-  }
 
-  @UseGuards(AccessTokenGuard)
-  @Get()
-  async getUsers() {
-    return this.userService.getUsers();
+    const baseUrl = `${request.protocol}://${request.get('host')}`;
+    await this.userService.uploadAvatar(avatar, avatarDto, baseUrl);
   }
 }

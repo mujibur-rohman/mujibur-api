@@ -52,6 +52,8 @@ export class AuthService {
     return { user, message: 'Account has registered' };
   }
 
+  // * Login
+
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const user = await this.prisma.user.findUnique({
@@ -78,7 +80,7 @@ export class AuthService {
     }
   }
 
-  async refrshToken(refreshTokenDto: RefreshTokenDto) {
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const { token, userId } = refreshTokenDto;
     const refreshToken = new JWTToken(this.configService, this.jwtService);
     const newRefreshToken = await refreshToken.getRefreshToken(token);

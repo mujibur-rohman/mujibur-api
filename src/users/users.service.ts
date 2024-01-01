@@ -4,6 +4,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { comparePassword } from 'src/utils/compare-password';
+import { AVATAR_PATH } from 'src/config/file-config';
 
 @Injectable()
 export class UsersService {
@@ -79,7 +80,11 @@ export class UsersService {
     return { message: `Change password successfully!` };
   }
 
-  async uploadAvatar(file: Express.Multer.File, avatarDto: AvatarDto) {
+  async uploadAvatar(
+    file: Express.Multer.File,
+    avatarDto: AvatarDto,
+    baseUrl: string,
+  ) {
     const { userId } = avatarDto;
 
     const user = await this.prisma.user.findFirst({
@@ -91,8 +96,8 @@ export class UsersService {
     if (!user) {
       throw new BadRequestException('User not found with this email!');
     }
-
-    console.log(file);
+    const urlAvatar = baseUrl + AVATAR_PATH + '/' + file.filename;
+    console.log(urlAvatar);
   }
 
   async getUsers(): Promise<User[]> {
