@@ -11,6 +11,7 @@ import { EmailService } from 'src/email/email.service';
 import {
   ForgotPasswordDto,
   LoginDto,
+  RefreshTokenDto,
   RegisterDto,
   ResetPasswordDto,
 } from './dto/auth.dto';
@@ -75,6 +76,17 @@ export class AuthService {
         },
       };
     }
+  }
+
+  async refrshToken(refreshTokenDto: RefreshTokenDto) {
+    const { token, userId } = refreshTokenDto;
+    const refreshToken = new JWTToken(this.configService, this.jwtService);
+    const newRefreshToken = await refreshToken.getRefreshToken(token);
+    await this.updateRefreshToken(userId, newRefreshToken);
+    return {
+      refreshToken: await refreshToken.getRefreshToken(token),
+      message: 'Success refresh token',
+    };
   }
 
   // * Logout

@@ -38,6 +38,14 @@ export class LogoutDto {
   userId: string;
 }
 
+export class RefreshTokenDto {
+  @IsNotEmpty({ message: 'Token Id is required.' })
+  token: string;
+
+  @IsNotEmpty({ message: 'User Id is required.' })
+  userId: string;
+}
+
 export class ForgotPasswordDto {
   @IsNotEmpty({ message: 'Email is required.' })
   @IsEmail({}, { message: 'Email must be valid.' })

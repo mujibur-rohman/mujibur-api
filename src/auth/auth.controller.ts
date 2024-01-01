@@ -1,13 +1,13 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ForgotPasswordDto,
   LoginDto,
   LogoutDto,
+  RefreshTokenDto,
   RegisterDto,
   ResetPasswordDto,
 } from './dto/auth.dto';
-import { Request } from 'express';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
 
 @Controller('auth')
@@ -22,8 +22,7 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/logout')
-  async logout(@Body() logoutDto: LogoutDto, @Req() req: Request) {
-    console.log(req.user);
+  async logout(@Body() logoutDto: LogoutDto) {
     await this.authService.logout(logoutDto.userId);
     return {
       message: 'Logout Successfully',
@@ -34,6 +33,12 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
     return user;
+  }
+
+  @Post('/refresh-token')
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    const result = await this.authService.refrshToken(refreshTokenDto);
+    return result;
   }
 
   @Post('/forgot-password')
