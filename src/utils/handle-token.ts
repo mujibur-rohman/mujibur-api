@@ -40,16 +40,8 @@ export class JWTToken {
     }
 
     const user: User = decoded.user;
-    const refreshToken = await this.jwt.signAsync(
-      {
-        user,
-      },
-      {
-        secret: this.config.get<string>('REFRESH_TOKEN_SECRET'),
-        expiresIn: '1d',
-      },
-    );
+    const data = await this.getToken(user);
 
-    return refreshToken;
+    return { ...data };
   }
 }

@@ -39,7 +39,7 @@ export class LogoutDto {
 }
 
 export class RefreshTokenDto {
-  @IsNotEmpty({ message: 'Token Id is required.' })
+  @IsNotEmpty({ message: 'Token is required.' })
   token: string;
 
   @IsNotEmpty({ message: 'User Id is required.' })

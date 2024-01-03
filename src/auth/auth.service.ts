@@ -69,24 +69,18 @@ export class AuthService {
       );
       return await token.getToken(user);
     } else {
-      return {
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        error: {
-          message: 'Invalid email or password',
-        },
-      };
+      throw new BadRequestException('Invalid Email or Password');
     }
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const { token, userId } = refreshTokenDto;
-    const refreshToken = new JWTToken(this.configService, this.jwtService);
-    const newRefreshToken = await refreshToken.getRefreshToken(token);
+    const tokenInstance = new JWTToken(this.configService, this.jwtService);
+    const newRefreshToken = (await tokenInstance.getRefreshToken(token))
+      .refreshToken;
     await this.updateRefreshToken(userId, newRefreshToken);
     return {
-      refreshToken: await refreshToken.getRefreshToken(token),
+      ...(await tokenInstance.getRefreshToken(token)),
       message: 'Success refresh token',
     };
   }

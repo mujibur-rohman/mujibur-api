@@ -23,9 +23,9 @@ import { Request } from 'express';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @UseGuards(AdminGuard)
   @UseGuards(AccessTokenGuard)
   @Get()
-  @UseGuards(AdminGuard)
   async getUsers() {
     return this.userService.getUsers();
   }

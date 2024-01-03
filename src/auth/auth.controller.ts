@@ -1,4 +1,12 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ForgotPasswordDto,
@@ -9,6 +17,8 @@ import {
   ResetPasswordDto,
 } from './dto/auth.dto';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
+import { Request } from 'express';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +37,18 @@ export class AuthController {
     return {
       message: 'Logout Successfully',
     };
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/me')
+  async currentUser(@Req() request: Request) {
+    if (!request.user) {
+      throw new UnauthorizedException();
+    }
+    const user = request.user as any;
+    const currentUser: User = user.user;
+
+    return currentUser;
   }
 
   @Post('/register')
