@@ -67,6 +67,6 @@ export class UsersController {
     }
 
     const baseUrl = `${request.protocol}://${request.get('host')}`;
-    await this.userService.uploadAvatar(avatar, avatarDto, baseUrl);
+    return await this.userService.uploadAvatar(avatar, avatarDto, baseUrl);
   }
 }

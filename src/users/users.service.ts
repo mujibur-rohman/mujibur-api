@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AvatarDto, ChangeNameDto, ChangePasswordDto } from './dto/users.dto';
 import { PrismaService } from 'prisma/prisma.service';
@@ -5,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { comparePassword } from 'src/utils/compare-password';
 import { AVATAR_PATH } from 'src/config/file-config';
+const fs = require('fs');
 
 @Injectable()
 export class UsersService {
@@ -97,7 +99,38 @@ export class UsersService {
       throw new BadRequestException('User not found with this email!');
     }
     const urlAvatar = baseUrl + AVATAR_PATH + '/' + file.filename;
-    console.log(urlAvatar);
+
+    const availableAvatar = await this.prisma.avatars.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!availableAvatar) {
+      await this.prisma.avatars.create({
+        data: {
+          url: urlAvatar,
+          path: file.path,
+          userId: user.id,
+        },
+      });
+    } else {
+      fs.unlinkSync(availableAvatar.path);
+      await this.prisma.avatars.update({
+        where: {
+          userId: user.id,
+        },
+        data: {
+          url: urlAvatar,
+          path: file.path,
+          userId: user.id,
+        },
+      });
+    }
+
+    return {
+      message: 'Avatar has changed',
+    };
   }
 
   async getUsers(): Promise<User[]> {
