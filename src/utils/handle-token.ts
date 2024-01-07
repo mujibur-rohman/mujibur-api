@@ -2,11 +2,13 @@ import { ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { PrismaService } from 'prisma/prisma.service';
 
 export class JWTToken {
   constructor(
     private readonly config: ConfigService,
     private readonly jwt: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   public async getToken(user: User) {
@@ -17,7 +19,7 @@ export class JWTToken {
         },
         {
           secret: this.config.get<string>('ACCESS_TOKEN_SECRET'),
-          expiresIn: '1h',
+          expiresIn: '20s',
         },
       ),
       this.jwt.signAsync(
@@ -39,7 +41,15 @@ export class JWTToken {
       throw new ForbiddenException('Invalid token!');
     }
 
-    const user: User = decoded.user;
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: decoded.user.id,
+      },
+      include: {
+        avatar: true,
+      },
+    });
+
     const data = await this.getToken(user);
 
     return { ...data };

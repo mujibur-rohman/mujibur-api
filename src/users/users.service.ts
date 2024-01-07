@@ -130,6 +130,10 @@ export class UsersService {
 
     return {
       message: 'Avatar has changed',
+      data: {
+        url: urlAvatar,
+        path: file.path,
+      },
     };
   }
 

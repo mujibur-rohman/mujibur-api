@@ -60,9 +60,16 @@ export class AuthService {
       where: {
         email,
       },
+      include: {
+        avatar: true,
+      },
     });
     if (user && (await comparePassword(password, user.password))) {
-      const token = new JWTToken(this.configService, this.jwtService);
+      const token = new JWTToken(
+        this.configService,
+        this.jwtService,
+        this.prisma,
+      );
       await this.updateRefreshToken(
         user.uuid,
         (await token.getToken(user)).refreshToken,
@@ -75,7 +82,11 @@ export class AuthService {
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const { token, userId } = refreshTokenDto;
-    const tokenInstance = new JWTToken(this.configService, this.jwtService);
+    const tokenInstance = new JWTToken(
+      this.configService,
+      this.jwtService,
+      this.prisma,
+    );
     const newRefreshToken = (await tokenInstance.getRefreshToken(token))
       .refreshToken;
     await this.updateRefreshToken(userId, newRefreshToken);
