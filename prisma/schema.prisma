@@ -29,4 +29,17 @@ model User {
   token        String?    @db.LongText()
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  post         Post[]        
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  title       String
+  content     String
+  coverImage  String
+  isArchived  Boolean
+  isPublished Boolean
+  userId      Int
+  user        User @relation(fields: [userId], references: [id])
 }

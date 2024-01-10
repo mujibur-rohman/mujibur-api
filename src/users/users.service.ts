@@ -30,7 +30,7 @@ export class UsersService {
       throw new BadRequestException('User not found');
     }
 
-    await this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: {
         id: user.id,
       },
@@ -39,7 +39,12 @@ export class UsersService {
       },
     });
 
-    return { message: `Name has changed!` };
+    return {
+      message: `Name has changed!`,
+      data: {
+        name: updatedUser.name,
+      },
+    };
   }
 
   // * change password

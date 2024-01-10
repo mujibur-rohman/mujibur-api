@@ -21,7 +21,7 @@ export class AdminGuard implements CanActivate {
       .trim();
     const decoded = await this.jwt.decode(token);
     if (!decoded || decoded?.exp * 1000 < Date.now()) {
-      throw new ForbiddenException('Invalid tokennn!');
+      throw new ForbiddenException('Invalid token!');
     }
     const user: User = decoded.user;
     return user.role === 'admin';

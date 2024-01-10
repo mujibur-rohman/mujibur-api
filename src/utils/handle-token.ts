@@ -19,7 +19,7 @@ export class JWTToken {
         },
         {
           secret: this.config.get<string>('ACCESS_TOKEN_SECRET'),
-          expiresIn: '20s',
+          expiresIn: '1h',
         },
       ),
       this.jwt.signAsync(
