@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { PostController } from './post/post.controller';
+import { PostService } from './post/post.service';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -20,8 +23,9 @@ import { join } from 'path';
       isGlobal: true,
     }),
     AuthModule,
+    PostModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, EmailService],
+  controllers: [AppController, PostController],
+  providers: [AppService, EmailService, PostService],
 })
 export class AppModule {}
