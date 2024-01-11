@@ -8,7 +8,7 @@
     "assets": [
       "email-templates/**/*",
       {
-        "include": "../public/img/avatar/**/*",
+        "include": "../public/img/**/*",
         "outDir": "dist/public",
         "watchAssets": true
       }

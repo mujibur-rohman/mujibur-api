@@ -11,6 +11,7 @@ import { join } from 'path';
 import { PostController } from './post/post.controller';
 import { PostService } from './post/post.service';
 import { PostModule } from './post/post.module';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { PostModule } from './post/post.module';
     PostModule,
   ],
   controllers: [AppController, PostController],
-  providers: [AppService, EmailService, PostService],
+  providers: [AppService, EmailService, PostService, PrismaService],
 })
 export class AppModule {}

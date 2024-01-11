@@ -19,7 +19,7 @@ model Avatars {
 }
 
 model User {
-  id           Int      @id @default(autoincrement()) @map("_id")
+  id           Int      @unique @id @default(autoincrement()) @map("_id")
   uuid         String   @unique
   name         String 
   email        String   @unique
@@ -37,9 +37,9 @@ model Post {
   slug        String    @unique
   title       String
   content     String
-  coverImage  String
+  coverImage  String?
   isArchived  Boolean
   isPublished Boolean
-  userId      Int
-  user        User @relation(fields: [userId], references: [id])
+  userId      String
+  user        User @relation(fields: [userId], references: [uuid])
 }

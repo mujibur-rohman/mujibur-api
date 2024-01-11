@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class AddPostDto {
   @IsNotEmpty({ message: 'Title is required.' })
@@ -7,8 +7,4 @@ export class AddPostDto {
   @IsNotEmpty({ message: 'Password is required.' })
   @IsString({ message: 'Content must string.' })
   content: string;
-
-  @IsOptional()
-  @IsNotEmpty({ message: 'Cover is required.' })
-  coverImage: string;
 }
