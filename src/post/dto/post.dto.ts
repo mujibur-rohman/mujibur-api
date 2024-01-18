@@ -8,3 +8,12 @@ export class AddPostDto {
   @IsString({ message: 'Content must string.' })
   content: string;
 }
+
+export class EditPostDto {
+  @IsNotEmpty({ message: 'Title is required.' })
+  title: string;
+
+  @IsNotEmpty({ message: 'Password is required.' })
+  @IsString({ message: 'Content must string.' })
+  content: string;
+}

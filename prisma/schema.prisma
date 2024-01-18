@@ -38,6 +38,7 @@ model Post {
   title       String
   content     String
   coverImage  String?
+  coverPath   String?
   isArchived  Boolean
   isPublished Boolean
   userId      String
