@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
   Post,
   Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -20,6 +24,28 @@ import { AccessTokenGuard } from 'src/guards/access-token.guard';
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
+
+  @Get('/')
+  @UseGuards(AccessTokenGuard)
+  async getAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('q') q: string = '',
+  ) {
+    const result = await this.postService.getAll({
+      limit: limit * 1,
+      page: page * 1,
+      q,
+    });
+    return result;
+  }
+
+  @Get('/:slug')
+  @UseGuards(AccessTokenGuard)
+  async getOne(@Param('slug') slug: string) {
+    const result = await this.postService.getOne(slug);
+    return result;
+  }
 
   @Post('/')
   @UseInterceptors(FileInterceptor('coverImage', saveCoverPostToStorage))
@@ -57,11 +83,6 @@ export class PostController {
     @Req() request: Request,
     @Param('slug') slug: string,
   ) {
-    // let urlCover: string = null;
-    // if (coverImage) {
-    //   const baseUrl = `${request.protocol}://${request.get('host')}`;
-    //   urlCover = baseUrl + POST_PATH + '/' + coverImage.filename;
-    // }
     const baseUrl = `${request.protocol}://${request.get('host')}`;
     const result = await this.postService.editPost({
       body: editPostDto,
@@ -69,6 +90,34 @@ export class PostController {
       slug,
       baseUrl,
     });
+    return result;
+  }
+
+  @Delete('/:slug')
+  @UseGuards(AccessTokenGuard)
+  async deletePost(@Param('slug') slug: string) {
+    const result = await this.postService.deletePost(slug);
+    return result;
+  }
+
+  @Delete('/cover/:slug')
+  @UseGuards(AccessTokenGuard)
+  async deleteCover(@Param('slug') slug: string) {
+    const result = await this.postService.deleteCover(slug);
+    return result;
+  }
+
+  @Patch('/archive/:slug')
+  @UseGuards(AccessTokenGuard)
+  async toggleArchive(@Param('slug') slug: string) {
+    const result = await this.postService.toggleArchive(slug);
+    return result;
+  }
+
+  @Patch('/publish/:slug')
+  @UseGuards(AccessTokenGuard)
+  async togglePublish(@Param('slug') slug: string) {
+    const result = await this.postService.togglePublish(slug);
     return result;
   }
 }

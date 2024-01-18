@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { AddPostDto, EditPostDto } from './dto/post.dto';
 import { User } from '@prisma/client';
@@ -9,6 +13,56 @@ const fs = require('fs');
 @Injectable()
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getAll({ limit, page, q }: { q: string; page: number; limit: number }) {
+    const offset = limit * page - limit;
+
+    const totalRows = await this.prisma.post.count({
+      where: {
+        title: {
+          contains: q,
+        },
+      },
+    });
+
+    const totalPage = Math.ceil(totalRows / limit);
+    const response = await this.prisma.post.findMany({
+      where: {
+        title: {
+          contains: q,
+        },
+      },
+      skip: offset,
+      take: limit,
+    });
+    return {
+      page,
+      limit,
+      totalRows,
+      totalPage,
+      data: response,
+    };
+  }
+
+  async getOne(slug: string) {
+    const availablePost = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (!availablePost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const response = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    return response;
+  }
 
   async addPost(
     addPostDto: AddPostDto,
@@ -108,6 +162,110 @@ export class PostService {
       },
     });
 
-    return result;
+    return { message: 'Edit post successfully', data: result };
+  }
+
+  async deletePost(slug: string) {
+    const availablePost = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (!availablePost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (availablePost.coverImage) {
+      fs.unlinkSync(availablePost.coverPath);
+    }
+
+    await this.prisma.post.delete({
+      where: {
+        id: availablePost.id,
+      },
+    });
+
+    return { message: 'Post has deleted' };
+  }
+
+  async deleteCover(slug: string) {
+    const availablePost = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (!availablePost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (!availablePost.coverImage) {
+      throw new BadRequestException('Nothing cover image');
+    }
+
+    fs.unlinkSync(availablePost.coverPath);
+
+    await this.prisma.post.update({
+      where: {
+        id: availablePost.id,
+      },
+      data: {
+        coverImage: null,
+        coverPath: null,
+      },
+    });
+
+    return { message: `Cover ${availablePost.title} has deleted` };
+  }
+
+  async toggleArchive(slug: string) {
+    const availablePost = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (!availablePost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const updatedData = await this.prisma.post.update({
+      where: {
+        id: availablePost.id,
+      },
+      data: {
+        isArchived: !availablePost.isArchived,
+      },
+    });
+
+    return {
+      message: `Post ${updatedData.isArchived ? 'archived' : 'unarchived'}`,
+    };
+  }
+
+  async togglePublish(slug: string) {
+    const availablePost = await this.prisma.post.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (!availablePost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const updatedData = await this.prisma.post.update({
+      where: {
+        id: availablePost.id,
+      },
+      data: {
+        isPublished: !availablePost.isPublished,
+      },
+    });
+
+    return {
+      message: `Post ${updatedData.isPublished ? 'published' : 'unpublished'}`,
+    };
   }
 }

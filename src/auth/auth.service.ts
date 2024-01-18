@@ -70,7 +70,6 @@ export class AuthService {
         this.jwtService,
         this.prisma,
       );
-      console.log(loginDto);
       await this.updateRefreshToken(
         user.uuid,
         (await token.getToken(user)).refreshToken,
