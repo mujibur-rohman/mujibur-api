@@ -44,3 +44,9 @@ model Post {
   userId      String
   user        User @relation(fields: [userId], references: [uuid])
 }
+
+model ImageContent {
+  id        Int    @id @default(autoincrement())
+  url       String
+  path      String
+}

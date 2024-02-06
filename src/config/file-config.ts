@@ -20,3 +20,4 @@ export const validMimeType: ValidMimeType[] = [
 
 export const AVATAR_PATH = '/img/avatar';
 export const POST_PATH = '/img/post';
+export const CONTENT_PATH = '/img/content';

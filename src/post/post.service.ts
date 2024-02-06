@@ -7,7 +7,7 @@ import {
 import { PrismaService } from 'prisma/prisma.service';
 import { AddPostDto, EditPostDto } from './dto/post.dto';
 import { User } from '@prisma/client';
-import { POST_PATH } from 'src/config/file-config';
+import { CONTENT_PATH, POST_PATH } from 'src/config/file-config';
 const fs = require('fs');
 
 @Injectable()
@@ -75,7 +75,9 @@ export class PostService {
     //* search post with same slug
     const countSameSlug = await this.prisma.post.count({
       where: {
-        slug: baseSlug,
+        slug: {
+          contains: baseSlug,
+        },
       },
     });
 
@@ -266,6 +268,28 @@ export class PostService {
 
     return {
       message: `Post ${updatedData.isPublished ? 'published' : 'unpublished'}`,
+    };
+  }
+
+  async uploadImageContent({
+    image,
+    baseUrl,
+  }: {
+    image: Express.Multer.File | null;
+    baseUrl: string;
+  }) {
+    const url = baseUrl + CONTENT_PATH + '/' + image.filename;
+    const res = await this.prisma.imageContent.create({
+      data: {
+        path: image.path,
+        url,
+      },
+    });
+    return {
+      message: 'Success add image',
+      data: {
+        url: res.url,
+      },
     };
   }
 }

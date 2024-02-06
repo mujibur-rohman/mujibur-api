@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,7 +17,10 @@ import {
 import { PostService } from './post.service';
 import { AddPostDto, EditPostDto } from './dto/post.dto';
 import { Request } from 'express';
-import { saveCoverPostToStorage } from 'src/utils/storage-files';
+import {
+  saveContentImageToStorage,
+  saveCoverPostToStorage,
+} from 'src/utils/storage-files';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { POST_PATH } from 'src/config/file-config';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
@@ -88,6 +92,25 @@ export class PostController {
       body: editPostDto,
       coverImage: coverImage || null,
       slug,
+      baseUrl,
+    });
+    return result;
+  }
+
+  @Post('/content/image')
+  @UseInterceptors(FileInterceptor('image', saveContentImageToStorage))
+  @UseGuards(AccessTokenGuard)
+  async contentImage(
+    @UploadedFile()
+    image: Express.Multer.File,
+    @Req() request: Request,
+  ) {
+    if (!image) {
+      throw new BadRequestException('image or slug is required');
+    }
+    const baseUrl = `${request.protocol}://${request.get('host')}`;
+    const result = await this.postService.uploadImageContent({
+      image: image || null,
       baseUrl,
     });
     return result;
